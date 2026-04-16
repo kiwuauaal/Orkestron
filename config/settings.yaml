@@ -1,0 +1,77 @@
+orchestrator:
+  model: "gpt-3.5-turbo"
+  api_key: "${OPENAI_API_KEY}"
+  temperature: 0.3
+  max_tokens: 2000
+
+cycle:
+  interval_minutes: 30
+  max_parallel_agents: 5
+  retry_on_failure: true
+  max_retries: 3
+
+agents:
+  planner:
+    enabled: true
+    model: "gpt-3.5-turbo"
+  
+  builder:
+    enabled: true
+    model: "gpt-3.5-turbo"
+    output_dir: "generated_code"
+  
+  tester:
+    enabled: true
+    model: "gpt-3.5-turbo"
+  
+  guard:
+    enabled: true
+    model: "gpt-3.5-turbo"
+    checks:
+      - lint_check
+      - type_check
+      - security_scan
+      - no_secrets_exposed
+  
+  designer:
+    enabled: true
+    model: "gpt-3.5-turbo"
+    output_dir: "generated_ui"
+
+message_bus:
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+  
+  rabbitmq:
+    host: "localhost"
+    port: 5672
+    user: "admin"
+    password: "admin"
+
+monitoring:
+  dashboard_port: 3000
+  monitor_port: 3001
+  api_port: 8000
+  websocket_port: 8000
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/swarmai.log"
+
+test_suite:
+  total_tests: 47
+  required_status: "all_pass"
+  test_categories:
+    orchestrator: 10
+    agents: 15
+    cycle: 10
+    message_bus: 5
+    integration: 7
+
+deployment:
+  environment: "development"
+  auto_deploy: false
+  guard_checks_required: true

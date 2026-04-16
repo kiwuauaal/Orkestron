@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Redis for message bus and shared state
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - orkestron_network
+
+  # RabbitMQ for task queue
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - orkestron_network
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REDIS_HOST=redis
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - redis
+      - rabbitmq
+    volumes:
+      - ./backend:/app
+      - generated_code:/app/generated_code
+    networks:
+      - orkestron_network
+    command: uvicorn api.routes:app --host 0.0.0.0 --port 8000 --reload
+
+  # Frontend Dashboard (Next.js)
+  frontend-dashboard:
+    build:
+      context: ./frontend/dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/dashboard:/app
+    networks:
+      - orkestron_network
+
+  # Vue Monitor
+  frontend-monitor:
+    build:
+      context: ./frontend/vue-monitor
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/vue-monitor:/app
+    networks:
+      - orkestron_network
+
+volumes:
+  redis_data:
+  rabbitmq_data:
+  generated_code:
+
+networks:
+  orkestron_network:
+    driver: bridge
