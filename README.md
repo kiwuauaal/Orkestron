@@ -242,7 +242,6 @@ Please read our contributing guidelines before submitting pull requests.
 
 ## Support
 
-For issues, questions, or contributions:
+For issues or contributions:
 - 📝 Open an issue on GitHub
-- 💬 Join our community discussions
 - ⭐ Star the repository if you find it helpful
