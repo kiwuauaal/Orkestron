@@ -34,9 +34,6 @@ Multi-agent orchestration system with central AI coordinator and GUI for autonom
 ### Installation
 
 1. **Clone the repository**
-```bash
-cd "ai bot project"
-```
 
 2. **Install backend dependencies**
 ```bash
